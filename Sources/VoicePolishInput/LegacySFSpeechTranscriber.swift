@@ -25,8 +25,8 @@ final class LegacySFSpeechTranscriber: NSObject, Transcriber {
         lastBest = ""
 
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
-            guard let self else { return }
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 self.handleAuthorization(status)
             }
         }
