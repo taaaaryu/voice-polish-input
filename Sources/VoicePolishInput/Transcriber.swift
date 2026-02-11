@@ -14,13 +14,7 @@ protocol Transcriber {
 enum DefaultTranscriberFactory {
     @MainActor
     static func make() -> Transcriber {
-        #if swift(>=6.2) && canImport(Speech)
-        if #available(macOS 26.0, *) {
-            return SpeechAnalyzerTranscriber()
-        }
+        // Legacy recognizer is used by default for lower start latency in push-to-talk.
         return LegacySFSpeechTranscriber()
-        #else
-        return LegacySFSpeechTranscriber()
-        #endif
     }
 }

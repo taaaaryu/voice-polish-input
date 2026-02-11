@@ -24,6 +24,7 @@ final class VoicePolishController: ObservableObject {
     private let polisher = TextPolisher()
     private let injector = FocusedTextInjector()
     private let dictionaryStore = UserDictionaryStore()
+    private var pendingInsertTarget: FocusedTextInjector.FocusTarget?
 
     init() {
         self.transcriber = DefaultTranscriberFactory.make()
@@ -71,7 +72,8 @@ final class VoicePolishController: ObservableObject {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
         do {
-            try injector.insert(text: text, allowTypeFallback: typeFallbackEnabled)
+            try injector.insert(text: text, allowTypeFallback: typeFallbackEnabled, target: pendingInsertTarget)
+            pendingInsertTarget = nil
         } catch {
             lastError = "Insert failed: \(error.localizedDescription)"
         }
@@ -116,6 +118,11 @@ final class VoicePolishController: ObservableObject {
         isRecording = true
         draftText = ""
         finalText = ""
+        do {
+            pendingInsertTarget = try injector.captureCurrentFocusTarget()
+        } catch {
+            pendingInsertTarget = nil
+        }
 
         transcriber.start(
             onPartial: { [weak self] text in
@@ -152,7 +159,7 @@ final class VoicePolishController: ObservableObject {
                 finalText = polished
                 polishedOut = polished
                 do {
-                    try injector.insert(text: polished, allowTypeFallback: typeFallbackEnabled)
+                    try injector.insert(text: polished, allowTypeFallback: typeFallbackEnabled, target: pendingInsertTarget)
                     inserted = true
                 } catch {
                     errorMessage = "Insert failed: \(error.localizedDescription)"
@@ -166,6 +173,7 @@ final class VoicePolishController: ObservableObject {
             }
 
             appendHistory(rawText: raw, polishedText: polishedOut, inserted: inserted, errorMessage: errorMessage)
+            pendingInsertTarget = nil
         }
     }
 

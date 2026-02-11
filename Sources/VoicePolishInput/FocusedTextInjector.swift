@@ -7,6 +7,7 @@ enum TextInjectionError: LocalizedError {
     case unsupportedElement
     case axError(AXError)
     case typeFallbackNotAllowed
+    case accessibilityNotTrusted
 
     var errorDescription: String? {
         switch self {
@@ -18,13 +19,22 @@ enum TextInjectionError: LocalizedError {
             return "Accessibility error: \(err.rawValue)"
         case .typeFallbackNotAllowed:
             return "Key-event fallback is disabled"
+        case .accessibilityNotTrusted:
+            return "Accessibility permission is not granted for VoicePolishInput"
         }
     }
 }
 
 final class FocusedTextInjector {
-    func insert(text: String, allowTypeFallback: Bool) throws {
-        if try insertViaAccessibility(text: text) {
+    typealias FocusTarget = AXUIElement
+
+    func captureCurrentFocusTarget() throws -> FocusTarget {
+        guard isAccessibilityTrusted() else { throw TextInjectionError.accessibilityNotTrusted }
+        return try currentFocusedElement()
+    }
+
+    func insert(text: String, allowTypeFallback: Bool, target: FocusTarget? = nil) throws {
+        if try insertViaAccessibility(text: text, target: target) {
             return
         }
 
@@ -32,13 +42,22 @@ final class FocusedTextInjector {
         try typeViaKeyEvents(text: text)
     }
 
-    private func insertViaAccessibility(text: String) throws -> Bool {
-        let systemWide = AXUIElementCreateSystemWide()
-        var focused: CFTypeRef?
-        let err = AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focused)
-        guard err == .success else { throw TextInjectionError.axError(err) }
-        guard let element = focused else { throw TextInjectionError.noFocusedElement }
-        let focusedElement = element as! AXUIElement
+    private func insertViaAccessibility(text: String, target: FocusTarget?) throws -> Bool {
+        guard isAccessibilityTrusted() else { throw TextInjectionError.accessibilityNotTrusted }
+
+        if let target, try insert(text: text, into: target) {
+            return true
+        }
+        let focusedElement = try currentFocusedElement()
+        return try insert(text: text, into: focusedElement)
+    }
+
+    private func insert(text: String, into focusedElement: AXUIElement) throws -> Bool {
+        var isSettable: DarwinBoolean = false
+        let errSettable = AXUIElementIsAttributeSettable(focusedElement, kAXValueAttribute as CFString, &isSettable)
+        if errSettable != .success || !isSettable.boolValue {
+            return false
+        }
 
         var value: CFTypeRef?
         let errValue = AXUIElementCopyAttributeValue(focusedElement, kAXValueAttribute as CFString, &value)
@@ -71,6 +90,19 @@ final class FocusedTextInjector {
         }
 
         return true
+    }
+
+    private func currentFocusedElement() throws -> AXUIElement {
+        let systemWide = AXUIElementCreateSystemWide()
+        var focused: CFTypeRef?
+        let err = AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focused)
+        guard err == .success else { throw TextInjectionError.axError(err) }
+        guard let element = focused else { throw TextInjectionError.noFocusedElement }
+        return element as! AXUIElement
+    }
+
+    private func isAccessibilityTrusted() -> Bool {
+        AXIsProcessTrusted()
     }
 
     private func typeViaKeyEvents(text: String) throws {

@@ -125,7 +125,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
 2. チャットなど、入力したいテキスト欄にカーソルを置く
 3. `F13` を押し続けて録音開始（離すまで録音）
 4. 話す（メニューバーUIで下書き確認）
-5. 同じホットキーで録音停止
+5. `F13` を離すと録音停止
 6. 自動整形後、フォーカス中の入力欄に挿入される
 7. 辞書を編集したい場合はメニューバーの `VoicePolishInput` を開いて `Open Management` を押し、以下を編集:
    - Filler Words: 削除したい口癖語
@@ -141,12 +141,11 @@ Fn Fn を使いたい場合は、Karabiner-Elements などで `F13` へリマッ
 
 ## Engine Selection / エンジン切り替え
 
-- macOS 26 SDK でビルドし、実行環境が macOS 26 の場合:
-  - 音声認識: `SpeechAnalyzer` + `SpeechTranscriber`
-  - 整形: `FoundationModels`（利用可能時）
-- 条件を満たさない場合:
-  - 音声認識: `SFSpeechRecognizer` に自動フォールバック
-  - 整形: ルールベース整形のみ
+- 既定の音声認識:
+  - `SFSpeechRecognizer`（起動レイテンシが低く、push-to-talk運用向け）
+- 整形:
+  - `FoundationModels` が利用可能なら使用
+  - 使えない場合はルールベース整形
 
 ## Troubleshooting / よくある問題
 
@@ -154,6 +153,8 @@ Fn Fn を使いたい場合は、Karabiner-Elements などで `F13` へリマッ
   - `xcode-select` が CLT を向いています。上記 `DEVELOPER_DIR=...` 付きコマンドか `sudo xcode-select -s ...` を使用してください。
 - 入力欄に挿入されない:
   - Accessibility 権限を確認してください。アプリによっては AX 挿入が制限される場合があります。
+- `Insert failed: Accessibility error: -25211`:
+  - `Accessibility` 権限が無効です。`System Settings > Privacy & Security > Accessibility` で `VoicePolishInput.app` を許可して再起動してください。
 - 録音が始まらない:
   - Microphone / Speech Recognition 権限を確認し、アプリを再起動してください。
 - 管理ページが開かない:
