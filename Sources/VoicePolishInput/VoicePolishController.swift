@@ -29,8 +29,11 @@ final class VoicePolishController: ObservableObject {
         self.transcriber = DefaultTranscriberFactory.make()
         reloadDictionaryFromStore()
 
-        hotKeyManager.onToggle = { [weak self] in
-            Task { @MainActor in self?.toggleRecording() }
+        hotKeyManager.onPress = { [weak self] in
+            Task { @MainActor in self?.startRecordingIfNeeded() }
+        }
+        hotKeyManager.onRelease = { [weak self] in
+            Task { @MainActor in self?.stopRecordingIfNeeded() }
         }
         hotKeyManager.isEnabled = isHotkeyEnabled
 
@@ -50,6 +53,16 @@ final class VoicePolishController: ObservableObject {
         } else {
             startRecording()
         }
+    }
+
+    func startRecordingIfNeeded() {
+        guard !isRecording else { return }
+        startRecording()
+    }
+
+    func stopRecordingIfNeeded() {
+        guard isRecording else { return }
+        stopRecording()
     }
 
     func insertFinalTextIntoFocusedField() {

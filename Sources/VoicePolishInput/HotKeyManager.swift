@@ -2,7 +2,8 @@ import Carbon
 import Foundation
 
 final class HotKeyManager {
-    var onToggle: (() -> Void)?
+    var onPress: (() -> Void)?
+    var onRelease: (() -> Void)?
 
     var isEnabled: Bool = false {
         didSet { isEnabled ? register() : unregister() }
@@ -23,7 +24,14 @@ final class HotKeyManager {
         let keyCode: UInt32 = UInt32(kVK_F13)
 
         var handler: EventHandlerRef?
-        let eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        let pressedType = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyPressed)
+        )
+        let releasedType = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyReleased)
+        )
 
         let statusInstall = InstallEventHandler(
             GetApplicationEventTarget(),
@@ -42,12 +50,16 @@ final class HotKeyManager {
                     &hkID
                 )
                 guard err == noErr, hkID.id == 1 else { return noErr }
-
-                manager.onToggle?()
+                let kind = GetEventKind(event)
+                if kind == UInt32(kEventHotKeyPressed) {
+                    manager.onPress?()
+                } else if kind == UInt32(kEventHotKeyReleased) {
+                    manager.onRelease?()
+                }
                 return noErr
             },
-            1,
-            [eventType],
+            2,
+            [pressedType, releasedType],
             Unmanaged.passUnretained(self).toOpaque(),
             &handler
         )
