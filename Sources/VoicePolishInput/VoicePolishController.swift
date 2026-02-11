@@ -2,6 +2,8 @@ import Foundation
 
 @MainActor
 final class VoicePolishController: ObservableObject {
+    nonisolated static let noSpeechCapturedMessage = "No speech captured. Hold F13 while speaking and check microphone permission."
+
     @Published var isRecording: Bool = false
     @Published var draftText: String = ""
     @Published var finalText: String = ""
@@ -144,7 +146,7 @@ final class VoicePolishController: ObservableObject {
         isRecording = false
         let rawFromEngine = transcriber.stop()
         let fallbackDraft = draftText
-        let raw = rawFromEngine.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallbackDraft : rawFromEngine
+        let raw = Self.resolvedRawText(rawFromEngine: rawFromEngine, draftFallback: fallbackDraft)
 
         Task { @MainActor in
             var inserted = false
@@ -153,7 +155,7 @@ final class VoicePolishController: ObservableObject {
 
             let rawTrimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !rawTrimmed.isEmpty else {
-                let message = "No speech captured. Hold F13 while speaking and check microphone permission."
+                let message = Self.noSpeechCapturedMessage
                 lastError = message
                 appendHistory(rawText: raw, polishedText: "", inserted: false, errorMessage: message)
                 pendingInsertTarget = nil
@@ -220,5 +222,9 @@ final class VoicePolishController: ObservableObject {
         fillerWords = dictionaryData.fillerWords
         replacementEntries = dictionaryData.replacementEntries
         historyEntries = dictionaryData.historyEntries
+    }
+
+    nonisolated static func resolvedRawText(rawFromEngine: String, draftFallback: String) -> String {
+        rawFromEngine.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? draftFallback : rawFromEngine
     }
 }

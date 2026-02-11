@@ -14,5 +14,9 @@ let package = Package(
         .executableTarget(
             name: "VoicePolishInput"
         ),
+        .testTarget(
+            name: "VoicePolishInputTests",
+            dependencies: ["VoicePolishInput"]
+        ),
     ]
 )
