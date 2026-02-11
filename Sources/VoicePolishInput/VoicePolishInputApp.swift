@@ -15,6 +15,7 @@ struct VoicePolishInputApp: App {
                 .environmentObject(controller)
                 .frame(width: 420)
         }
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()
