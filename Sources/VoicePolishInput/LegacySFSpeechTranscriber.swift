@@ -24,11 +24,9 @@ final class LegacySFSpeechTranscriber: NSObject, Transcriber {
         self.onError = onError
         lastBest = ""
 
-        SFSpeechRecognizer.requestAuthorization { [weak self] status in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.handleAuthorization(status)
-            }
+        Task { @MainActor in
+            let status = await Self.requestAuthorizationStatus()
+            self.handleAuthorization(status)
         }
     }
 
@@ -53,27 +51,29 @@ final class LegacySFSpeechTranscriber: NSObject, Transcriber {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
-            self?.request?.append(buffer)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+            request.append(buffer)
         }
 
         audioEngine.prepare()
         try audioEngine.start()
 
         task = speechRecognizer?.recognitionTask(with: request) { [weak self] result, error in
-            guard let self else { return }
-            if let error {
-                self.onError?(error)
-                return
-            }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if let error {
+                    self.onError?(error)
+                    return
+                }
 
-            guard let result else { return }
-            let text = result.bestTranscription.formattedString
-            self.lastBest = text
-            self.onPartial?(text)
+                guard let result else { return }
+                let text = result.bestTranscription.formattedString
+                self.lastBest = text
+                self.onPartial?(text)
 
-            if result.isFinal {
-                self.onFinal?(text)
+                if result.isFinal {
+                    self.onFinal?(text)
+                }
             }
         }
     }
@@ -90,6 +90,14 @@ final class LegacySFSpeechTranscriber: NSObject, Transcriber {
             try startEngine()
         } catch {
             onError?(error)
+        }
+    }
+
+    private static func requestAuthorizationStatus() async -> SFSpeechRecognizerAuthorizationStatus {
+        await withCheckedContinuation { continuation in
+            SFSpeechRecognizer.requestAuthorization { status in
+                continuation.resume(returning: status)
+            }
         }
     }
 }
