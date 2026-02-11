@@ -2,45 +2,98 @@
 
 Push-to-talk speech → live draft → (stop) polish → insert into the currently focused text field.
 
-## What it does
+音声入力をトグルし、下書き表示しながら、停止時に整形して現在フォーカス中の入力欄へ挿入します。
 
-- `Control + Option + Space` toggles recording (global hotkey).
-- While recording, shows a live draft in the menubar popover.
-- When you stop, it polishes the text (rule-based by default) and inserts it into the currently focused input field.
+## Features / 機能
 
-## Permissions (macOS)
+- `Control + Option + Space` で録音開始/停止（グローバルホットキー）
+- 録音中はメニューバーUIに下書きを表示
+- 停止後にテキスト整形して、フォーカス中の入力欄へ挿入
+- `Control + Option + Space` toggles recording globally
+- Live draft appears while speaking
+- On stop, text is polished and inserted into the focused text field
 
-You’ll need to allow:
+## Requirements / 動作要件
 
-- Microphone
-- Speech Recognition
-- Accessibility (to insert into the focused field)
-- Input Monitoring (only if you enable the “type via key events” fallback)
+- macOS 26 + Apple Silicon 推奨
+- Xcode 26 SDK（`SpeechAnalyzer` / `FoundationModels` を使う場合）
+- Apple Intelligence 有効（オンデバイス整形を使う場合）
+- Recommended: macOS 26 + Apple Silicon
+- Xcode 26 SDK for `SpeechAnalyzer` / `FoundationModels`
+- Apple Intelligence enabled for on-device polishing
 
-## About the Dictation key (Fn Fn)
-
-macOS’s built-in Dictation key behavior isn’t reliably interceptable by third-party apps.
-If you really want to use that key, a practical approach is to remap it to `Control + Option + Space` with a key remapper (e.g. Karabiner-Elements).
-
-## Apple on-device LLM polishing (Foundation Models)
-
-This repo will automatically use Apple’s on-device model when the build environment provides `FoundationModels`
-(macOS 26 SDK / Xcode 26) and Apple Intelligence is enabled on the device.
-
-## SpeechAnalyzer transcription
-
-This repo will automatically prefer `SpeechAnalyzer` + `SpeechTranscriber` when built with a macOS 26 SDK / Xcode 26.
-Otherwise it falls back to `SFSpeechRecognizer`.
-
-## Build
-
-From the repo root:
+## Build / ビルド
 
 ```sh
 swift build
 ```
 
-If `xcode-select` is still pointing to Command Line Tools, run with:
+`xcode-select` が CLT を向いている場合:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift build
+```
+
+If needed, switch globally:
+
+```sh
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
+## Run / 起動
+
+```sh
+swift run VoicePolishInput
+```
+
+`xcode-select` 未切替なら:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishInput
+```
+
+## Permissions Setup / 権限設定
+
+初回起動時または設定画面で、以下を許可してください:
+
+- Microphone（マイク）
+- Speech Recognition（音声認識）
+- Accessibility（入力欄へ直接挿入）
+- Input Monitoring（キーストロークfallbackを使う場合のみ）
+
+権限は `System Settings > Privacy & Security` から再設定できます。
+
+## How To Use / 使い方
+
+1. `swift run VoicePolishInput` で起動（Dockには常駐表示されず、メニューバーに出ます）
+2. チャットなど、入力したいテキスト欄にカーソルを置く
+3. `Control + Option + Space` を押して録音開始
+4. 話す（メニューバーUIで下書き確認）
+5. 同じホットキーで録音停止
+6. 自動整形後、フォーカス中の入力欄に挿入される
+
+## Dictation Key (Fn Fn) / 音声入力キー(Fn Fn)について
+
+macOS標準の Dictation キー動作は、サードパーティアプリから安定してフックできません。
+Fn Fn を使いたい場合は、Karabiner-Elements などで `Control + Option + Space` へリマップする運用が現実的です。
+
+## Engine Selection / エンジン切り替え
+
+- macOS 26 SDK でビルドし、実行環境が macOS 26 の場合:
+  - 音声認識: `SpeechAnalyzer` + `SpeechTranscriber`
+  - 整形: `FoundationModels`（利用可能時）
+- 条件を満たさない場合:
+  - 音声認識: `SFSpeechRecognizer` に自動フォールバック
+  - 整形: ルールベース整形のみ
+
+## Troubleshooting / よくある問題
+
+- `xcodebuild requires Xcode`:
+  - `xcode-select` が CLT を向いています。上記 `DEVELOPER_DIR=...` 付きコマンドか `sudo xcode-select -s ...` を使用してください。
+- 入力欄に挿入されない:
+  - Accessibility 権限を確認してください。アプリによっては AX 挿入が制限される場合があります。
+- 録音が始まらない:
+  - Microphone / Speech Recognition 権限を確認し、アプリを再起動してください。
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift build
