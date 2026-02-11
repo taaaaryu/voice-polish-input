@@ -93,7 +93,7 @@ print_next_steps() {
   echo "- Accessibility"
   echo "- Input Monitoring (only if key-event fallback is enabled)"
   echo ""
-  echo "Hotkey: Control + Option + Space"
+  echo "Hotkey: F5"
 }
 
 ensure_swift_toolchain
@@ -103,4 +103,3 @@ create_app_bundle
 codesign_bundle
 launch_app
 print_next_steps
-

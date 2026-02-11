@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var controller: VoicePolishController
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -39,6 +40,10 @@ struct ContentView: View {
                 }
                 .disabled(controller.finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
+                Button("Open Management") {
+                    openSettings()
+                }
+
                 Spacer()
 
                 if let error = controller.lastError {
@@ -51,4 +56,3 @@ struct ContentView: View {
         .padding(12)
     }
 }
-

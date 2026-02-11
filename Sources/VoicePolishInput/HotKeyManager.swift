@@ -19,8 +19,8 @@ final class HotKeyManager {
         guard hotKeyRef == nil else { return }
 
         let hotKeyID = EventHotKeyID(signature: OSType(0x56504948), id: 1) // 'VPIH'
-        let modifiers: UInt32 = UInt32(controlKey | optionKey)
-        let keyCode: UInt32 = UInt32(kVK_Space)
+        let modifiers: UInt32 = 0
+        let keyCode: UInt32 = UInt32(kVK_F5)
 
         var handler: EventHandlerRef?
         let eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
@@ -77,4 +77,3 @@ final class HotKeyManager {
         }
     }
 }
-
