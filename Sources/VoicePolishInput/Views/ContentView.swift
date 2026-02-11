@@ -34,6 +34,13 @@ struct ContentView: View {
                     .disabled(true)
             }
 
+            GroupBox("Key Debug") {
+                Text(controller.lastKeyDebugMessage)
+                    .font(.system(size: 12, weight: .regular, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(.secondary)
+            }
+
             HStack {
                 Button("Insert into focused field") {
                     controller.insertFinalTextIntoFocusedField()

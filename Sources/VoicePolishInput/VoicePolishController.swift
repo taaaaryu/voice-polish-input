@@ -16,8 +16,10 @@ final class VoicePolishController: ObservableObject {
     @Published var fillerWords: [String] = []
     @Published var replacementEntries: [UserReplacementEntry] = []
     @Published var historyEntries: [VoiceHistoryEntry] = []
+    @Published var lastKeyDebugMessage: String = "No key event yet."
 
     private let hotKeyManager = HotKeyManager()
+    private let keyCodeDebugMonitor = KeyCodeDebugMonitor()
     private let transcriber: Transcriber
     private let polisher = TextPolisher()
     private let injector = FocusedTextInjector()
@@ -31,6 +33,13 @@ final class VoicePolishController: ObservableObject {
             Task { @MainActor in self?.toggleRecording() }
         }
         hotKeyManager.isEnabled = isHotkeyEnabled
+
+        keyCodeDebugMonitor.onEvent = { [weak self] message in
+            Task { @MainActor in
+                self?.lastKeyDebugMessage = message
+            }
+        }
+        keyCodeDebugMonitor.start()
     }
 
     func toggleRecording() {

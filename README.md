@@ -132,6 +132,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
    - User Dictionary: `From -> To` 置換ルール
 8. ブラウザで管理したい場合は `./scripts/admin-up.sh` を実行し、`http://localhost:8765` を開く
 9. `Speech History` で音声入力後の履歴（日時、raw、polished、挿入成否、エラー）を確認
+10. メニューバーUIの `Key Debug` に、直近のキーコード（`keyCode=...`）が表示されるのでホットキー検証に使える
 
 ## Dictation Key (Fn Fn) / 音声入力キー(Fn Fn)について
 
