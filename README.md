@@ -4,6 +4,32 @@ Push-to-talk speech → live draft → (stop) polish → insert into the current
 
 音声入力をトグルし、下書き表示しながら、停止時に整形して現在フォーカス中の入力欄へ挿入します。
 
+## Quick Install / 最短導入
+
+### From local clone / ローカルcloneから
+
+```sh
+./scripts/install.sh
+```
+
+### One-liner from GitHub / GitHubからワンライナー
+
+```sh
+git clone https://github.com/taaaaryu/voice-polish-input.git && cd voice-polish-input && ./scripts/install.sh
+```
+
+### Update / 更新
+
+```sh
+./scripts/update.sh
+```
+
+### Uninstall / 削除
+
+```sh
+./scripts/uninstall.sh
+```
+
 ## Features / 機能
 
 - `Control + Option + Space` で録音開始/停止（グローバルホットキー）
