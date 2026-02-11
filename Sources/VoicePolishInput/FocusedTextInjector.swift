@@ -8,6 +8,7 @@ enum TextInjectionError: LocalizedError {
     case axError(AXError)
     case typeFallbackNotAllowed
     case accessibilityNotTrusted
+    case keyEventUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -21,6 +22,8 @@ enum TextInjectionError: LocalizedError {
             return "Key-event fallback is disabled"
         case .accessibilityNotTrusted:
             return "Accessibility permission is not granted for VoicePolishInput"
+        case .keyEventUnavailable:
+            return "Key-event fallback unavailable (check Input Monitoring permission)"
         }
     }
 }
@@ -34,7 +37,7 @@ final class FocusedTextInjector {
     }
 
     func insert(text: String, allowTypeFallback: Bool, target: FocusTarget? = nil) throws {
-        if try insertViaAccessibility(text: text, target: target) {
+        if (try? insertViaAccessibility(text: text, target: target)) == true {
             return
         }
 
@@ -43,7 +46,7 @@ final class FocusedTextInjector {
     }
 
     private func insertViaAccessibility(text: String, target: FocusTarget?) throws -> Bool {
-        guard isAccessibilityTrusted() else { throw TextInjectionError.accessibilityNotTrusted }
+        guard isAccessibilityTrusted() else { return false }
 
         if let target, try insert(text: text, into: target) {
             return true
@@ -119,9 +122,13 @@ final class FocusedTextInjector {
     }
 
     private func keyPress(unicode: UInt16) throws {
-        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
-        guard let down = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true) else { return }
-        guard let up = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else { return }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else {
+            throw TextInjectionError.keyEventUnavailable
+        }
+        guard let down = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+              let up = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else {
+            throw TextInjectionError.keyEventUnavailable
+        }
 
         var u = unicode
         down.keyboardSetUnicodeString(stringLength: 1, unicodeString: &u)
@@ -132,9 +139,13 @@ final class FocusedTextInjector {
     }
 
     private func keyPress(keyCode: CGKeyCode) throws {
-        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
-        guard let down = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true) else { return }
-        guard let up = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else { return }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else {
+            throw TextInjectionError.keyEventUnavailable
+        }
+        guard let down = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true),
+              let up = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else {
+            throw TextInjectionError.keyEventUnavailable
+        }
         down.post(tap: .cghidEventTap)
         up.post(tap: .cghidEventTap)
     }

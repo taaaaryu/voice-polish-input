@@ -11,7 +11,7 @@ final class VoicePolishController: ObservableObject {
         didSet { hotKeyManager.isEnabled = isHotkeyEnabled }
     }
 
-    @Published var useFoundationModelsWhenAvailable: Bool = true
+    @Published var useFoundationModelsWhenAvailable: Bool = false
     @Published var typeFallbackEnabled: Bool = true
     @Published var fillerWords: [String] = []
     @Published var replacementEntries: [UserReplacementEntry] = []
@@ -142,16 +142,27 @@ final class VoicePolishController: ObservableObject {
 
     private func stopRecording() {
         isRecording = false
-        let raw = transcriber.stop()
+        let rawFromEngine = transcriber.stop()
+        let fallbackDraft = draftText
+        let raw = rawFromEngine.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallbackDraft : rawFromEngine
 
         Task { @MainActor in
             var inserted = false
             var errorMessage: String?
             var polishedOut = raw
 
+            let rawTrimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !rawTrimmed.isEmpty else {
+                let message = "No speech captured. Hold F13 while speaking and check microphone permission."
+                lastError = message
+                appendHistory(rawText: raw, polishedText: "", inserted: false, errorMessage: message)
+                pendingInsertTarget = nil
+                return
+            }
+
             do {
                 let polished = try await polisher.polish(
-                    text: raw,
+                    text: rawTrimmed,
                     preferFoundationModels: useFoundationModelsWhenAvailable,
                     fillerWords: fillerWords,
                     replacementEntries: replacementEntries

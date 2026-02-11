@@ -155,6 +155,11 @@ Fn Fn を使いたい場合は、Karabiner-Elements などで `F13` へリマッ
   - Accessibility 権限を確認してください。アプリによっては AX 挿入が制限される場合があります。
 - `Insert failed: Accessibility error: -25211`:
   - `Accessibility` 権限が無効です。`System Settings > Privacy & Security > Accessibility` で `VoicePolishInput.app` を許可して再起動してください。
+- `No speech captured`:
+  - `F13` を押している間に話してください（押していない時間は録音されません）。
+  - Microphone 権限と入力音量を確認してください。
+- `Key-event fallback unavailable`:
+  - `Input Monitoring` 権限を有効にしてください（fallback入力に必要）。
 - 録音が始まらない:
   - Microphone / Speech Recognition 権限を確認し、アプリを再起動してください。
 - 管理ページが開かない:
