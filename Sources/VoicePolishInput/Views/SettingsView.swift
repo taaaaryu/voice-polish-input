@@ -12,7 +12,7 @@ struct SettingsView: View {
                 Form {
                     Section("Hotkey") {
                         Toggle("Enable global hotkey", isOn: $controller.isHotkeyEnabled)
-                        Text("Default: F5")
+                        Text("Default: F13")
                             .foregroundStyle(.secondary)
                     }
 

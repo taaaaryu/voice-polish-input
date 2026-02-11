@@ -93,7 +93,7 @@ print_next_steps() {
   echo "- Accessibility"
   echo "- Input Monitoring (only if key-event fallback is enabled)"
   echo ""
-  echo "Hotkey: F5"
+  echo "Hotkey: F13"
 }
 
 ensure_swift_toolchain

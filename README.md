@@ -46,10 +46,10 @@ Stop:
 
 ## Features / 機能
 
-- `F5` で録音開始/停止（グローバルホットキー）
+- `F13` で録音開始/停止（グローバルホットキー）
 - 録音中はメニューバーUIに下書きを表示
 - 停止後にテキスト整形して、フォーカス中の入力欄へ挿入
-- `F5` toggles recording globally
+- `F13` toggles recording globally
 - Live draft appears while speaking
 - On stop, text is polished and inserted into the focused text field
 - 設定画面でフィラー語とユーザー辞書（置換ルール）を管理
@@ -123,7 +123,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
 
 1. `swift run VoicePolishInput` で起動（Dockには常駐表示されず、メニューバーに出ます）
 2. チャットなど、入力したいテキスト欄にカーソルを置く
-3. `F5` を押して録音開始
+3. `F13` を押して録音開始
 4. 話す（メニューバーUIで下書き確認）
 5. 同じホットキーで録音停止
 6. 自動整形後、フォーカス中の入力欄に挿入される
@@ -136,7 +136,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
 ## Dictation Key (Fn Fn) / 音声入力キー(Fn Fn)について
 
 macOS標準の Dictation キー動作は、サードパーティアプリから安定してフックできません。
-Fn Fn を使いたい場合は、Karabiner-Elements などで `F5` へリマップする運用が現実的です。
+Fn Fn を使いたい場合は、Karabiner-Elements などで `F13` へリマップする運用が現実的です。
 
 ## Engine Selection / エンジン切り替え
 

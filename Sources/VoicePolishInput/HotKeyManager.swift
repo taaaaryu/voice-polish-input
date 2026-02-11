@@ -20,7 +20,7 @@ final class HotKeyManager {
 
         let hotKeyID = EventHotKeyID(signature: OSType(0x56504948), id: 1) // 'VPIH'
         let modifiers: UInt32 = 0
-        let keyCode: UInt32 = UInt32(kVK_F5)
+        let keyCode: UInt32 = UInt32(kVK_F13)
 
         var handler: EventHandlerRef?
         let eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
