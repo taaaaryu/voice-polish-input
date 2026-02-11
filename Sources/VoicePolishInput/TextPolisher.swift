@@ -7,8 +7,10 @@ final class TextPolisher {
         guard preferFoundationModels else { return rulePolished }
 
         #if swift(>=6.2) && canImport(FoundationModels)
-        if let result = try await FoundationModelsPolisher.polishIfAvailable(text: rulePolished) {
-            return result
+        if #available(macOS 26.0, *) {
+            if let result = try await FoundationModelsPolisher.polishIfAvailable(text: rulePolished) {
+                return result
+            }
         }
         #endif
 

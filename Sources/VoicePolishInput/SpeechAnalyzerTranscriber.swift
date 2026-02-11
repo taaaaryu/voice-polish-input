@@ -3,6 +3,7 @@
 import Foundation
 import Speech
 
+@available(macOS 26.0, *)
 @MainActor
 final class SpeechAnalyzerTranscriber: Transcriber {
     private var analyzer: SpeechAnalyzer?
@@ -129,6 +130,7 @@ final class SpeechAnalyzerTranscriber: Transcriber {
     }
 }
 
+@available(macOS 26.0, *)
 final class MicrophoneCapture: @unchecked Sendable {
     private let audioEngine: AVAudioEngine
     private let converter: AVAudioConverter
@@ -196,4 +198,3 @@ final class MicrophoneCapture: @unchecked Sendable {
 }
 
 #endif
-

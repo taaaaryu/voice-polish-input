@@ -2,6 +2,7 @@
 import Foundation
 import FoundationModels
 
+@available(macOS 26.0, *)
 @MainActor
 enum FoundationModelsPolisher {
     static func polishIfAvailable(text: String) async throws -> String? {

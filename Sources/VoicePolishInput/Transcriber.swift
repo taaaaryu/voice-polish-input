@@ -15,7 +15,10 @@ enum DefaultTranscriberFactory {
     @MainActor
     static func make() -> Transcriber {
         #if swift(>=6.2) && canImport(Speech)
-        return SpeechAnalyzerTranscriber()
+        if #available(macOS 26.0, *) {
+            return SpeechAnalyzerTranscriber()
+        }
+        return LegacySFSpeechTranscriber()
         #else
         return LegacySFSpeechTranscriber()
         #endif

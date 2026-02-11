@@ -39,3 +39,9 @@ From the repo root:
 ```sh
 swift build
 ```
+
+If `xcode-select` is still pointing to Command Line Tools, run with:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift build
+```
