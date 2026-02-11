@@ -69,6 +69,10 @@ create_app_bundle() {
   <string>14.0</string>
   <key>LSUIElement</key>
   <true/>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Voice input requires microphone access.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Voice input requires speech recognition to transcribe spoken text.</string>
 </dict>
 </plist>
 PLIST
