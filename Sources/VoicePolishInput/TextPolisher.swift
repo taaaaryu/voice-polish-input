@@ -2,8 +2,17 @@ import Foundation
 
 @MainActor
 final class TextPolisher {
-    func polish(text: String, preferFoundationModels: Bool) async throws -> String {
-        let rulePolished = RuleBasedPolisher.polish(text: text)
+    func polish(
+        text: String,
+        preferFoundationModels: Bool,
+        fillerWords: [String],
+        replacementEntries: [UserReplacementEntry]
+    ) async throws -> String {
+        let rulePolished = RuleBasedPolisher.polish(
+            text: text,
+            fillerWords: fillerWords,
+            replacementEntries: replacementEntries
+        )
         guard preferFoundationModels else { return rulePolished }
 
         #if swift(>=6.2) && canImport(FoundationModels)
@@ -19,21 +28,21 @@ final class TextPolisher {
 }
 
 enum RuleBasedPolisher {
-    static func polish(text: String) -> String {
+    static func polish(
+        text: String,
+        fillerWords: [String],
+        replacementEntries: [UserReplacementEntry]
+    ) -> String {
         var t = text
 
-        let fillers = [
-            "えー", "え〜", "えぇ",
-            "あの", "あのー", "あの〜",
-            "えっと", "えっとー", "えっと〜",
-            "その", "そのー", "その〜",
-            "なんか",
-        ]
-
-        for f in fillers {
+        for f in fillerWords {
             t = t.replacingOccurrences(of: "\(f) ", with: "")
             t = t.replacingOccurrences(of: "\(f)　", with: "")
             t = t.replacingOccurrences(of: f, with: "")
+        }
+
+        for entry in replacementEntries {
+            t = t.replacingOccurrences(of: entry.from, with: entry.to)
         }
 
         while t.contains("  ") { t = t.replacingOccurrences(of: "  ", with: " ") }

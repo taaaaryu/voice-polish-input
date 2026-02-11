@@ -13,14 +13,21 @@ final class VoicePolishController: ObservableObject {
 
     @Published var useFoundationModelsWhenAvailable: Bool = true
     @Published var typeFallbackEnabled: Bool = true
+    @Published var fillerWords: [String] = []
+    @Published var replacementEntries: [UserReplacementEntry] = []
 
     private let hotKeyManager = HotKeyManager()
     private let transcriber: Transcriber
     private let polisher = TextPolisher()
     private let injector = FocusedTextInjector()
+    private let dictionaryStore = UserDictionaryStore()
 
     init() {
         self.transcriber = DefaultTranscriberFactory.make()
+        let dictionaryData = dictionaryStore.load()
+        fillerWords = dictionaryData.fillerWords
+        replacementEntries = dictionaryData.replacementEntries
+
         hotKeyManager.onToggle = { [weak self] in
             Task { @MainActor in self?.toggleRecording() }
         }
@@ -47,6 +54,40 @@ final class VoicePolishController: ObservableObject {
         } catch {
             lastError = "Insert failed: \(error.localizedDescription)"
         }
+    }
+
+    func addFillerWord(_ rawWord: String) {
+        let word = rawWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !word.isEmpty else { return }
+        guard !fillerWords.contains(word) else { return }
+        fillerWords.append(word)
+        fillerWords.sort()
+        persistDictionary()
+    }
+
+    func removeFillerWord(_ word: String) {
+        fillerWords.removeAll { $0 == word }
+        persistDictionary()
+    }
+
+    func addReplacement(from rawFrom: String, to rawTo: String) {
+        let from = rawFrom.trimmingCharacters(in: .whitespacesAndNewlines)
+        let to = rawTo.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !from.isEmpty, !to.isEmpty else { return }
+
+        if let idx = replacementEntries.firstIndex(where: { $0.from == from }) {
+            replacementEntries[idx] = UserReplacementEntry(from: from, to: to)
+        } else {
+            replacementEntries.append(UserReplacementEntry(from: from, to: to))
+        }
+
+        replacementEntries.sort { $0.from < $1.from }
+        persistDictionary()
+    }
+
+    func removeReplacement(from: String) {
+        replacementEntries.removeAll { $0.from == from }
+        persistDictionary()
     }
 
     private func startRecording() {
@@ -78,7 +119,9 @@ final class VoicePolishController: ObservableObject {
             do {
                 let polished = try await polisher.polish(
                     text: raw,
-                    preferFoundationModels: useFoundationModelsWhenAvailable
+                    preferFoundationModels: useFoundationModelsWhenAvailable,
+                    fillerWords: fillerWords,
+                    replacementEntries: replacementEntries
                 )
                 finalText = polished
                 try injector.insert(text: polished, allowTypeFallback: typeFallbackEnabled)
@@ -87,5 +130,14 @@ final class VoicePolishController: ObservableObject {
                 finalText = raw
             }
         }
+    }
+
+    private func persistDictionary() {
+        dictionaryStore.save(
+            UserDictionaryData(
+                fillerWords: fillerWords,
+                replacementEntries: replacementEntries
+            )
+        )
     }
 }

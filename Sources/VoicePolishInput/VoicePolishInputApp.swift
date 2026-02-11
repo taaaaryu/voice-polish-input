@@ -19,8 +19,7 @@ struct VoicePolishInputApp: App {
         Settings {
             SettingsView()
                 .environmentObject(controller)
-                .frame(width: 520, height: 320)
+                .frame(width: 700, height: 560)
         }
     }
 }
-

@@ -38,6 +38,8 @@ git clone https://github.com/taaaaryu/voice-polish-input.git && cd voice-polish-
 - `Control + Option + Space` toggles recording globally
 - Live draft appears while speaking
 - On stop, text is polished and inserted into the focused text field
+- 設定画面でフィラー語とユーザー辞書（置換ルール）を管理
+- Manage filler words and custom replace rules in Settings
 
 ## Requirements / 動作要件
 
@@ -97,6 +99,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
 4. 話す（メニューバーUIで下書き確認）
 5. 同じホットキーで録音停止
 6. 自動整形後、フォーカス中の入力欄に挿入される
+7. 辞書を編集したい場合はメニューバー項目から Settings を開き、以下を編集:
+   - Filler Words: 削除したい口癖語
+   - User Dictionary: `From -> To` 置換ルール
 
 ## Dictation Key (Fn Fn) / 音声入力キー(Fn Fn)について
 
