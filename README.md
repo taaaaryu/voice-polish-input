@@ -30,6 +30,20 @@ git clone https://github.com/taaaaryu/voice-polish-input.git && cd voice-polish-
 ./scripts/uninstall.sh
 ```
 
+### Start localhost admin page (Docker) / 管理ページ起動（Docker）
+
+```sh
+./scripts/admin-up.sh
+```
+
+Open: `http://localhost:8765`
+
+Stop:
+
+```sh
+./scripts/admin-down.sh
+```
+
 ## Features / 機能
 
 - `F5` で録音開始/停止（グローバルホットキー）
@@ -40,6 +54,8 @@ git clone https://github.com/taaaaryu/voice-polish-input.git && cd voice-polish-
 - On stop, text is polished and inserted into the focused text field
 - 設定画面でフィラー語とユーザー辞書（置換ルール）を管理
 - Manage filler words and custom replace rules in Settings
+- ローカルホスト管理ページ（Docker）で辞書編集と履歴確認
+- Localhost admin page (Docker) for dictionary and history
 
 ## Requirements / 動作要件
 
@@ -80,6 +96,18 @@ swift run VoicePolishInput
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishInput
 ```
 
+## Shared State File / 共有データファイル
+
+アプリ本体とDocker管理ページは同じ状態ファイルを使います:
+
+- `~/Library/Application Support/VoicePolishInput/state.json`
+
+このファイルに以下が保存されます:
+
+- `fillerWords`
+- `replacementEntries`
+- `historyEntries`（音声入力後の履歴。raw/polished/時刻/挿入成否/エラー）
+
 ## Permissions Setup / 権限設定
 
 初回起動時または設定画面で、以下を許可してください:
@@ -102,6 +130,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run VoicePolishIn
 7. 辞書を編集したい場合はメニューバーの `VoicePolishInput` を開いて `Open Management` を押し、以下を編集:
    - Filler Words: 削除したい口癖語
    - User Dictionary: `From -> To` 置換ルール
+8. ブラウザで管理したい場合は `./scripts/admin-up.sh` を実行し、`http://localhost:8765` を開く
+9. `Speech History` で音声入力後の履歴（日時、raw、polished、挿入成否、エラー）を確認
 
 ## Dictation Key (Fn Fn) / 音声入力キー(Fn Fn)について
 
@@ -125,7 +155,6 @@ Fn Fn を使いたい場合は、Karabiner-Elements などで `F5` へリマッ�
   - Accessibility 権限を確認してください。アプリによっては AX 挿入が制限される場合があります。
 - 録音が始まらない:
   - Microphone / Speech Recognition 権限を確認し、アプリを再起動してください。
-
-```sh
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift build
-```
+- 管理ページが開かない:
+  - Docker Desktop が起動しているか確認してください。
+  - `./scripts/admin-up.sh` を再実行してください。

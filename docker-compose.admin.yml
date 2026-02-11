@@ -1,0 +1,13 @@
+services:
+  admin:
+    build:
+      context: ./admin
+    container_name: voice-polish-admin
+    environment:
+      - VOICE_POLISH_STATE_PATH=/data/state.json
+    volumes:
+      - "${VOICE_POLISH_DATA_DIR}:/data"
+    ports:
+      - "127.0.0.1:8765:8765"
+    restart: unless-stopped
+

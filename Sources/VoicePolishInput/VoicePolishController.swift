@@ -15,6 +15,7 @@ final class VoicePolishController: ObservableObject {
     @Published var typeFallbackEnabled: Bool = true
     @Published var fillerWords: [String] = []
     @Published var replacementEntries: [UserReplacementEntry] = []
+    @Published var historyEntries: [VoiceHistoryEntry] = []
 
     private let hotKeyManager = HotKeyManager()
     private let transcriber: Transcriber
@@ -24,9 +25,7 @@ final class VoicePolishController: ObservableObject {
 
     init() {
         self.transcriber = DefaultTranscriberFactory.make()
-        let dictionaryData = dictionaryStore.load()
-        fillerWords = dictionaryData.fillerWords
-        replacementEntries = dictionaryData.replacementEntries
+        reloadDictionaryFromStore()
 
         hotKeyManager.onToggle = { [weak self] in
             Task { @MainActor in self?.toggleRecording() }
@@ -91,6 +90,7 @@ final class VoicePolishController: ObservableObject {
     }
 
     private func startRecording() {
+        reloadDictionaryFromStore()
         isRecording = true
         draftText = ""
         finalText = ""
@@ -116,6 +116,10 @@ final class VoicePolishController: ObservableObject {
         let raw = transcriber.stop()
 
         Task { @MainActor in
+            var inserted = false
+            var errorMessage: String?
+            var polishedOut = raw
+
             do {
                 let polished = try await polisher.polish(
                     text: raw,
@@ -124,11 +128,22 @@ final class VoicePolishController: ObservableObject {
                     replacementEntries: replacementEntries
                 )
                 finalText = polished
-                try injector.insert(text: polished, allowTypeFallback: typeFallbackEnabled)
+                polishedOut = polished
+                do {
+                    try injector.insert(text: polished, allowTypeFallback: typeFallbackEnabled)
+                    inserted = true
+                } catch {
+                    errorMessage = "Insert failed: \(error.localizedDescription)"
+                    lastError = errorMessage
+                }
             } catch {
                 lastError = "Polish/insert failed: \(error.localizedDescription)"
                 finalText = raw
+                polishedOut = raw
+                errorMessage = lastError
             }
+
+            appendHistory(rawText: raw, polishedText: polishedOut, inserted: inserted, errorMessage: errorMessage)
         }
     }
 
@@ -136,8 +151,33 @@ final class VoicePolishController: ObservableObject {
         dictionaryStore.save(
             UserDictionaryData(
                 fillerWords: fillerWords,
-                replacementEntries: replacementEntries
+                replacementEntries: replacementEntries,
+                historyEntries: historyEntries
             )
         )
+    }
+
+    private func appendHistory(rawText: String, polishedText: String, inserted: Bool, errorMessage: String?) {
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let entry = VoiceHistoryEntry(
+            id: UUID().uuidString,
+            createdAtISO8601: timestamp,
+            rawText: rawText,
+            polishedText: polishedText,
+            inserted: inserted,
+            errorMessage: errorMessage
+        )
+        historyEntries.insert(entry, at: 0)
+        if historyEntries.count > 300 {
+            historyEntries.removeLast(historyEntries.count - 300)
+        }
+        persistDictionary()
+    }
+
+    private func reloadDictionaryFromStore() {
+        let dictionaryData = dictionaryStore.load()
+        fillerWords = dictionaryData.fillerWords
+        replacementEntries = dictionaryData.replacementEntries
+        historyEntries = dictionaryData.historyEntries
     }
 }
