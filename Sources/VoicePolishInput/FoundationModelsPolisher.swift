@@ -1,4 +1,4 @@
-#if ENABLE_FOUNDATION_MODELS && canImport(FoundationModels)
+#if swift(>=6.2) && canImport(FoundationModels)
 import Foundation
 import FoundationModels
 
@@ -26,4 +26,3 @@ enum FoundationModelsPolisher {
     }
 }
 #endif
-

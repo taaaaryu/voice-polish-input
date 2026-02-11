@@ -14,7 +14,7 @@ protocol Transcriber {
 enum DefaultTranscriberFactory {
     @MainActor
     static func make() -> Transcriber {
-        #if ENABLE_SPEECH_ANALYZER
+        #if swift(>=6.2) && canImport(Speech)
         return SpeechAnalyzerTranscriber()
         #else
         return LegacySFSpeechTranscriber()

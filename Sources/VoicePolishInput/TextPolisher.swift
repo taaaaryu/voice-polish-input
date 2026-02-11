@@ -6,7 +6,7 @@ final class TextPolisher {
         let rulePolished = RuleBasedPolisher.polish(text: text)
         guard preferFoundationModels else { return rulePolished }
 
-        #if ENABLE_FOUNDATION_MODELS && canImport(FoundationModels)
+        #if swift(>=6.2) && canImport(FoundationModels)
         if let result = try await FoundationModelsPolisher.polishIfAvailable(text: rulePolished) {
             return result
         }

@@ -24,19 +24,13 @@ If you really want to use that key, a practical approach is to remap it to `Cont
 
 ## Apple on-device LLM polishing (Foundation Models)
 
-This repo includes an optional on-device polisher behind a build flag:
-
-- Define `ENABLE_FOUNDATION_MODELS`
-
-It requires an SDK that provides `FoundationModels` (macOS 26 SDK / Xcode 26) and Apple Intelligence enabled on the device.
+This repo will automatically use Apple’s on-device model when the build environment provides `FoundationModels`
+(macOS 26 SDK / Xcode 26) and Apple Intelligence is enabled on the device.
 
 ## SpeechAnalyzer transcription
 
-SpeechAnalyzer is also behind a build flag:
-
-- Define `ENABLE_SPEECH_ANALYZER`
-
-The current `SpeechAnalyzerTranscriber` file is a placeholder; it’s intended to be implemented using the macOS 26 Speech APIs (SpeechAnalyzer + SpeechTranscriber).
+This repo will automatically prefer `SpeechAnalyzer` + `SpeechTranscriber` when built with a macOS 26 SDK / Xcode 26.
+Otherwise it falls back to `SFSpeechRecognizer`.
 
 ## Build
 
@@ -45,4 +39,3 @@ From the repo root:
 ```sh
 swift build
 ```
-
